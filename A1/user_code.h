@@ -41,15 +41,122 @@ void groupCustomersByHashtags(fileIterator& hashtags, fileIterator& purchases,fi
 {
     //Use this to log compute time    
     auto start = high_resolution_clock::now();
-    //  Write your code here
+    
+    /*
+    #PROMPT# Read the hashtags data using the hashtags file iterator and store it in a suitable data structure.
+    */
+
+    unordered_map<int, vector<string>> hashtagsMap;
+    while (hashtags.hasNext()) {
+        string line = hashtags.next();
+        if (line.empty()) break;
+        vector<string> tokens = split(line, ',');
+        int product_id = stoi(tokens[0]);
+        vector<string> hashtags(tokens.begin() + 1, tokens.end());
+        hashtagsMap[product_id] = hashtags;
+    }
+
+    // // Debug
+    // for (auto it = hashtagsMap.begin(); it != hashtagsMap.end(); it++) {
+    //     cout << it->first << " ";
+    //     for (auto tag : it->second) {
+    //         cout << tag << " ";
+    //     }
+    //     cout << endl;
+    // }
+
+    /*
+    #PROMPT# Create an unordered_map<int, unordered_map<string, int>> to store the count
+     of hashtags for each customer. Read from the purchases file iterator and update the count.
+    */
+    unordered_map<int, unordered_map<string, int>> hashtagCount;
+    while (purchases.hasNext()) {
+        string line = purchases.next();
+        if (line.empty()) break;
+        vector<string> tokens = split(line, ',');
+        int customer_id = stoi(tokens[0]);
+        int product_id = stoi(tokens[1]);
+        if (hashtagsMap.find(product_id) != hashtagsMap.end()) {
+            for (auto hashtag : hashtagsMap[product_id]) {
+                hashtagCount[customer_id][hashtag]++;
+            }
+        }
+    }
+
+    // // Debug
+    // for (auto it = hashtagCount.begin(); it != hashtagCount.end(); it++) {
+    //     cout << it->first << ":";
+    //     for (auto tag : it->second) {
+    //         cout << tag.first << " " << tag.second << " ";
+    //     }
+    //     cout << endl;
+    // }
+
+    /*
+    #PROMPT# unordered_map<int, vector<string>> customerPrimaryInterests  Determine primary interests.
+    Sort in descending order of frequency and then second level ascending lexographical order.
+    */
+    unordered_map<int, vector<string>> customerPrimaryInterests;
+    for (auto it = hashtagCount.begin(); it != hashtagCount.end(); it++) {
+        vector<pair<string, int>> tags(it->second.begin(), it->second.end());
+        sort(tags.begin(), tags.end(), [](const pair<string, int>& a, const pair<string, int>& b) {
+            if (a.second == b.second) {
+                return a.first < b.first;
+            }
+            return a.second > b.second;
+        });
+        vector<string> primaryInterests;
+        for (int i = 0; i < k && i < tags.size(); i++) {
+            primaryInterests.push_back(tags[i].first);
+        }
+        customerPrimaryInterests[it->first] = primaryInterests;
+    }
+
+    // // Debug
+    // for (auto it = customerPrimaryInterests.begin(); it != customerPrimaryInterests.end(); it++) {
+    //     cout << it->first << ":";
+    //     for (auto tag : it->second) {
+    //         cout << tag << " ";
+    //     }
+    //     cout << endl;
+    // }
+
+    /*
+    #PROMPT# Determine the interest groups based on primary interests. If two customers have same elements 
+    in customerPrimaryInterests.second in any order, they are in the same group.
+    */
+
+    unordered_map<string, vector<int>> groupMap;
+    for (auto it = customerPrimaryInterests.begin(); it != customerPrimaryInterests.end(); it++) {
+        vector<string> primaryInterests = it->second;
+        sort(primaryInterests.begin(), primaryInterests.end());
+        string key = "";
+        for (auto tag : primaryInterests) {
+            key += tag + ",";
+        }
+        groupMap[key].push_back(it->first);
+    }
+
+    // // Debug
+    // for (auto it = groupMap.begin(); it != groupMap.end(); it++) {
+    //     cout << it->first << ":";
+    //     for (auto customer : it->second) {
+    //         cout << customer << " ";
+    //     }
+    //     cout << endl;
+    // }
+    
+
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(stop - start);
     cout << "Time taken by compute part of the function: "<< duration.count() << " microseconds" << endl;
 
     // Use the below utility function to write the output to a file
     // Call this function for every group as a vector of integers
-    vector<int> group;
-    writeOutputToFile(group, outputFilePath);
+    for(auto it = groupMap.begin(); it != groupMap.end(); it++){
+        vector<int> group = it->second;
+        writeOutputToFile(group, outputFilePath);
+    }
     return;
 }
 
