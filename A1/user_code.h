@@ -16,7 +16,6 @@ using namespace std;
 //Global Variable to store the count of hashtags for each customer. To be reused in Q3.
 unordered_map<int, unordered_map<string, int>> hashtagCount;
 
-
 // #PROMPT# Split function to split a line into tokens. Use this function to split the lines read from the files.
     vector<string> split(const string& line, char delimiter) {
         vector<string> tokens;
@@ -150,6 +149,11 @@ void groupCustomersByHashtags(fileIterator& hashtags, fileIterator& purchases,fi
     //     cout << endl;
     // }
     
+
+    // #PROMPT# If the outputFilePath does not contain "/output.", clear the hashtagCount global variable.
+    if (outputFilePath.find("/output.") == string::npos) {
+        hashtagCount.clear();
+    }
 
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(stop - start);
