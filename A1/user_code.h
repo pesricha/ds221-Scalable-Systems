@@ -10,6 +10,7 @@
 #include "fileWriter.h"
 #include <sstream> 
 #include <unordered_set>
+#include <sys/resource.h>
 
 using namespace std;
 
@@ -27,6 +28,13 @@ unordered_map<int, unordered_map<string, int>> hashtagCount;
         return tokens;
     }
 
+// Function to get current memory usage
+long getMemoryUsage() {
+    struct rusage usage;
+    getrusage(RUSAGE_SELF, &usage);
+    return usage.ru_maxrss; // Memory usage in kilobytes
+}
+
 //////////////////////////////////////////////////////////////////////////////////
 // MODIFY THIS SECTION
 //////////////////////////////////////////////////////////////////////////////////
@@ -41,8 +49,7 @@ unordered_map<int, unordered_map<string, int>> hashtagCount;
 void groupCustomersByHashtags(fileIterator& hashtags, fileIterator& purchases,fileIterator& prices, int k, string outputFilePath)
 {
     //Use this to log compute time    
-    auto start = high_resolution_clock::now();
-    
+    // auto start = high_resolution_clock::now();
     /*
     #PROMPT# Read the hashtags data using the hashtags file iterator and store it in a suitable data structure.
     */
@@ -155,9 +162,9 @@ void groupCustomersByHashtags(fileIterator& hashtags, fileIterator& purchases,fi
         hashtagCount.clear();
     }
 
-    auto stop = high_resolution_clock::now();
-    auto duration = duration_cast<microseconds>(stop - start);
-    cout << "Time taken by compute part of the function: "<< duration.count() << " microseconds" << endl;
+    // auto stop = high_resolution_clock::now();
+    // auto duration = duration_cast<microseconds>(stop - start);
+    // cout << "Time taken by compute part of the function: "<< duration.count() << " microseconds" << endl;
 
     // Use the below utility function to write the output to a file
     // Call this function for every group as a vector of integers
@@ -242,7 +249,7 @@ float calculateGroupAverageExpense(vector<int> customerList, fileIterator& purch
 
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(stop - start);
-    cout << "Time taken by this function: "<< duration.count() << " microseconds" << endl;
+    // cout << "Time taken by this function: "<< duration.count() << " microseconds" << endl;
 
     return avgExpense;
 }
@@ -387,7 +394,7 @@ void groupCustomersByHashtagsForDynamicInserts(fileIterator& hashtags, fileItera
 
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(stop - start);
-    cout << "Time taken by compute part of the function: "<< duration.count() << " microseconds" << endl;
+    // cout << "Time taken by compute part of the function: "<< duration.count() << " microseconds" << endl;
     
     for(auto it = groupMap.begin(); it != groupMap.end(); it++){
         vector<int> group = it->second;
