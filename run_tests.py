@@ -26,6 +26,6 @@ def run_command(i):
 
 if __name__ == "__main__":
     
-    for i in range(20):
+    for i in range(30):
         run_command(i+1)
         print("\n\n")
